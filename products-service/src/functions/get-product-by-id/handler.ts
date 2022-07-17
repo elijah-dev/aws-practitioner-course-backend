@@ -7,7 +7,7 @@ import { products } from "src/data/products";
 const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
-  const product = products.find((item) => item.id === event.queryStringParameters.productId);
+  const product = products.find((item) => item.id === event.pathParameters.productId);
 
   return formatJSONResponse({ result: product ?? null });
 };

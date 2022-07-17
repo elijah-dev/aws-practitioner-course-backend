@@ -7,15 +7,8 @@ export default {
     {
       http: {
         method: "get",
-        path: "product",
+        path: "product/{productId}",
         cors: true,
-        request: {
-          parameters: {
-            querystrings: {
-              productId: true,
-            },
-          },
-        },
       },
     },
   ],
