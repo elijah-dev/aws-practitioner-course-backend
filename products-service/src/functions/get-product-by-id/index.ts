@@ -8,6 +8,7 @@ export default {
       http: {
         method: "get",
         path: "product",
+        cors: true,
         request: {
           parameters: {
             querystrings: {
