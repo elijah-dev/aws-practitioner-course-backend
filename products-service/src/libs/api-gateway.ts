@@ -24,5 +24,5 @@ export const formatJSONResponse = <T>(response: T, statusCode = 200) => {
   };
 };
 
-export const formatJSONErrorResponse = (message: string, statusCode = 500) =>
+export const formatJSONErrorResponse = (message: any, statusCode = 500) =>
   formatJSONResponse({ message }, statusCode);

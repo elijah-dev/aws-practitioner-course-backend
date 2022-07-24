@@ -6,7 +6,7 @@ import { Client } from "pg";
 import { pgCredentials } from "src/config/pg-credentials";
 import { queryString } from "./query";
 
-const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+const getProductById: ValidatedEventAPIGatewayProxyEvent<null> = async (
   event
 ) => {
   try {
@@ -38,4 +38,4 @@ const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 };
 
-export const main = middyfy(hello);
+export const main = middyfy(getProductById);
