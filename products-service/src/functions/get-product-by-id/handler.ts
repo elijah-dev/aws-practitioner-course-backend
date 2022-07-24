@@ -3,7 +3,7 @@ import { formatJSONResponse, formatJSONErrorResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { Client } from "pg";
 import { pgCredentials } from "src/config/pg-credentials";
-import { queryString } from "./query";
+import { getQueryConfig } from "./query";
 
 const getProductById: ValidatedEventAPIGatewayProxyEvent<null> = async (
   event
@@ -13,10 +13,7 @@ const getProductById: ValidatedEventAPIGatewayProxyEvent<null> = async (
     const client = new Client(pgCredentials);
     await client.connect();
 
-    const result = await client.query({
-      text: queryString,
-      values: [productId],
-    });
+    const result = await client.query(getQueryConfig(productId));
 
     if (result.rowCount > 1) {
       return formatJSONErrorResponse(
