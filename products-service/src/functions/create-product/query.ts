@@ -6,6 +6,7 @@ const query = {
   insert: "INSERT INTO products",
   columns: "(title, description, cost, image)",
   values: "VALUES ($1, $2, $3, $4)",
+  returning: "RETURNING *"
 };
 
 export const getQueryConfig = ({
@@ -14,6 +15,6 @@ export const getQueryConfig = ({
   cost,
   image,
 }: FromSchema<typeof schema>): QueryConfig => ({
-  text: [query.insert, query.columns, query.values].join(" "),
+  text: [query.insert, query.columns, query.values, query.returning].join(" "),
   values: [title, description, cost, image],
 });

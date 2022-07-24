@@ -24,7 +24,7 @@ const createProduct: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       return formatJSONErrorResponse("Could not create product");
     }
 
-    return formatJSONResponse(result);
+    return formatJSONResponse(result.rows[0]);
   } catch (error) {
     console.log(error);
     return formatJSONErrorResponse({ error, requestBody: body, queryConfig });

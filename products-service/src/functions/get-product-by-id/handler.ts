@@ -1,4 +1,3 @@
-import schema from "@functions/get-product-by-id/schema";
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { formatJSONResponse, formatJSONErrorResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
