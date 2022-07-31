@@ -1,15 +1,37 @@
-import schema from "@functions/get-product-by-id/schema";
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
-import { formatJSONResponse } from "@libs/api-gateway";
+import { formatJSONResponse, formatJSONErrorResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
-import { products } from "src/data/products";
+import { Client } from "pg";
+import { pgCredentials } from "src/config/pg-credentials";
+import { getQueryConfig } from "./query";
 
-const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+const getProductById: ValidatedEventAPIGatewayProxyEvent<null> = async (
   event
 ) => {
-  const product = products.find((item) => item.id === event.pathParameters.productId);
+  try {
+    const productId = event.pathParameters.productId;
+    const client = new Client(pgCredentials);
+    await client.connect();
 
-  return formatJSONResponse({ result: product ?? null });
+    const result = await client.query(getQueryConfig(productId));
+
+    if (result.rowCount > 1) {
+      return formatJSONErrorResponse(
+        "Multiple products with the same id found"
+      );
+    }
+
+    if (result.rowCount === 0) {
+      return formatJSONErrorResponse(
+        `Unable to found product with id ${productId}`
+      );
+    }
+
+    return formatJSONResponse(result.rows[0]);
+  } catch (error) {
+    console.log(error);
+    return formatJSONErrorResponse(JSON.stringify(error));
+  }
 };
 
-export const main = middyfy(hello);
+export const main = middyfy(getProductById);
