@@ -4,10 +4,10 @@ import {
   GetObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { formatJSONErrorResponse, formatJSONResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { Handler, S3Event } from "aws-lambda";
-import { s3ClientConfig } from "src/config/s3-client-config";
 import { PARSED_FILES_FOLDER, UPLOADS_FOLDER } from "src/config/constants";
 
 const csv = require("csv-parser");
@@ -28,16 +28,23 @@ const importFileParser: Handler<S3Event> = async ({ Records }) => {
       Key: key,
     };
 
-    const client = new S3Client(s3ClientConfig);
+    const s3Client = new S3Client({ region: process.env.REGION });
     const getCommand = new GetObjectCommand(commandConfig);
 
-    const { Body } = await client.send(getCommand);
+    const sqsClient = new SQSClient({ region: process.env.REGION });
+
+    const { Body } = await s3Client.send(getCommand);
 
     const parse = async () =>
       new Promise((resolve, reject) => {
         Body.pipe(csv())
           .on("data", (data) => {
             console.log(data);
+            const sendMessageCommand = new SendMessageCommand({
+              QueueUrl: process.env.SQS_URL,
+              MessageBody: JSON.stringify(data),
+            });
+            sqsClient.send(sendMessageCommand);
           })
           .once("error", (error) => {
             reject(error);
@@ -48,9 +55,9 @@ const importFileParser: Handler<S3Event> = async ({ Records }) => {
               Key: key.replace(UPLOADS_FOLDER, PARSED_FILES_FOLDER),
               CopySource: `${bucket}/${key}`,
             });
-            await client.send(copyCommand);
+            await s3Client.send(copyCommand);
             const deleteCommand = new DeleteObjectCommand(commandConfig);
-            await client.send(deleteCommand);
+            await s3Client.send(deleteCommand);
             resolve("Parsed successfully");
           });
       });
