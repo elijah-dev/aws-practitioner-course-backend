@@ -38,13 +38,14 @@ const importFileParser: Handler<S3Event> = async ({ Records }) => {
     const parse = async () =>
       new Promise((resolve, reject) => {
         Body.pipe(csv())
-          .on("data", (data) => {
-            console.log(data);
+          .on("data", async (data) => {
+            console.log("Sending message to SQS:", data);
             const sendMessageCommand = new SendMessageCommand({
               QueueUrl: process.env.SQS_URL,
               MessageBody: JSON.stringify(data),
             });
-            sqsClient.send(sendMessageCommand);
+            const messageResult = await sqsClient.send(sendMessageCommand);
+            console.log("Message sent with result: ", messageResult);
           })
           .once("error", (error) => {
             reject(error);
@@ -55,9 +56,16 @@ const importFileParser: Handler<S3Event> = async ({ Records }) => {
               Key: key.replace(UPLOADS_FOLDER, PARSED_FILES_FOLDER),
               CopySource: `${bucket}/${key}`,
             });
-            await s3Client.send(copyCommand);
+
+            console.log("Sending copy command to S3: ", copyCommand);
+            const copyResult = await s3Client.send(copyCommand);
+            console.log("Copied with result: ", copyResult);
+
+            console.log("Sending delete command to S3: ", copyCommand);
             const deleteCommand = new DeleteObjectCommand(commandConfig);
-            await s3Client.send(deleteCommand);
+            const deleteResult = await s3Client.send(deleteCommand);
+            console.log("Deleted with result: ", deleteResult);
+
             resolve("Parsed successfully");
           });
       });

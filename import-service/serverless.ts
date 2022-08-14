@@ -7,8 +7,9 @@ import {
   importFileParser,
   catalogBatchProcess,
 } from "@functions/index";
-import { importFileParserRole } from "src/sls/roles";
-import { catalogItemsQueue, catalogItemsQueuePolicy } from "src/sls/sqs";
+import { resources } from "src/resources";
+import { CATALOG_ITEMS_QUEUE } from "src/resources/sqs";
+import { CREATE_PRODUCT_TOPIC } from "src/resources/sns";
 
 const region = process.env.REGION as AWS["provider"]["region"];
 
@@ -39,17 +40,10 @@ const serverlessConfiguration: AWS = {
       S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
       SQS_NAME: process.env.SQS_NAME,
       SQS_URL: {
-        "Fn::Join": [
-          "",
-          [
-            "https://sqs.",
-            region,
-            ".amazonaws.com/",
-            { Ref: "AWS::AccountId" },
-            "/",
-            process.env.SQS_NAME,
-          ],
-        ],
+        Ref: CATALOG_ITEMS_QUEUE,
+      },
+      SNS_ARN: {
+        Ref: CREATE_PRODUCT_TOPIC,
       },
     },
   },
@@ -69,11 +63,7 @@ const serverlessConfiguration: AWS = {
     },
   },
   resources: {
-    Resources: {
-      importFileParserRole,
-      catalogItemsQueue,
-      catalogItemsQueuePolicy,
-    },
+    Resources: resources,
   },
 };
 
