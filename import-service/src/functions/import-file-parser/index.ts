@@ -1,10 +1,12 @@
 import { handlerPath } from "@libs/handler-resolver";
 import { UPLOADS_FOLDER } from "src/config/constants";
+import { IMPORT_FILE_PARSER_ROLE } from "src/resources/roles";
 import { AWSFunctionConfig } from "src/types/lambda";
 
 const config: AWSFunctionConfig = {
   name: "import-file-parser",
   handler: `${handlerPath(__dirname)}/handler.main`,
+  role: IMPORT_FILE_PARSER_ROLE,
   events: [
     {
       s3: {
